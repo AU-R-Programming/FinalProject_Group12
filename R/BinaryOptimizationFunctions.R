@@ -14,9 +14,16 @@
 initial_values <- function(X, y) {
   X <- as.matrix(X)
   y <- as.vector(y)
+
+  # Check if the first column is not all ones (indicating no intercept column)
+  if (!all(X[, 1] == 1)) {
+    X <- cbind(1, X)  # Add intercept column
+  }
+
   beta_0 <- solve(t(X) %*% X) %*% t(X) %*% y
   return(as.numeric(beta_0))
 }
+
 
 
 logistic_loss <- function(beta, X, y) {
@@ -86,6 +93,5 @@ confusion_matrix <- function(y, y_pred) {
     )
   ))
 }
-
 
 
