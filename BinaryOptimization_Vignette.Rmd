@@ -23,3 +23,7 @@ y <- c(0, 1, 1, 0)
 initial_values(X, y)
 ```
 
+
+
+References: 
+https://chatgpt.com/share/674f5a8b-75e4-8011-bb0f-a7d310511afb
