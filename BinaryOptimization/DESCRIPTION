@@ -1,14 +1,16 @@
 Package: BinaryOptimization
+Version: 1.0.0
 Type: Package
 Title: Binary Classification Using Numerical Optimization
 Authors@R: c(
     person("Jacob", "Martin", role = "aut"),
-    person("Jack", "Wilson", role = "aut"),
-    person("Grant", "Preiss", role = "aut"),
+    person("Jack", "Wilson", role = c("aut", "cre"), email = "jsw0069@auburn.edu"),
+    person("Grant", "Preiss", role = "aut")
     )
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: <jsw0069@auburn.edu>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.3.1
