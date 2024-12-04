@@ -9,21 +9,45 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 This R package implements a supervised binary classification framework designed to predict binary outcomes (e.g., 0 or 1) based on numerical predictor variables. Built around numerical optimization techniques, this package provides tools to build, analyze, and interpret logistic regression models.The package focuses on estimating model coefficients, evaluating model performance, and generating confidence intervals for better statistical understanding.
-```{r}
 
+
+## Installing & Loading Packages
+```{r}
 library(devtools)
 install_github("AU-R-Programming/FinalProject_Group12")
 library(BinaryOptimization)
-
 ```
+
+## Example Data 
+Once the package have been loaded, we can provide an example dataset to demonstrate this package's functions. First we will create a simple, small dataset with two predictors and a binary outcome variable.
+
 ```{r}
 
 X <- matrix(c(1, 1, 1, 1, 2, 3, 4, 5), ncol = 2)
 y <- c(0, 1, 1, 0)
-initial_values(X, y)
 ```
 
+##  Estimating Coefficients For Logistic Regression 
+The core of this package is in estimating the coefficients β to represent the influence of the predictors on the binary outcome. It does this by minimizing the logistic loss function using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) optimization method. 
 
+```{r}
+# Estimate the coefficients for the logistic regression model
+beta_estimates <- estimate_coefficients(X, y)
+print(beta_estimates)
+```
+
+## Evaluate The Model Using Logistic Loss
+Once we have the estimated coefficients, we can use the logistic_loss() function to evaluate the fit of the model by calculating the logistic loss. The logistic loss is a measure of how well the model's predictions match the actual data, with lower values indicating better performance.
+```{r}
+# Define the estimated coefficients
+beta <- beta_estimates
+
+# Compute the logistic loss for the current model
+loss <- logistic_loss(beta, X, y)
+print(loss)
+```
 
 References: 
 https://chatgpt.com/share/674f5a8b-75e4-8011-bb0f-a7d310511afb
+
+
