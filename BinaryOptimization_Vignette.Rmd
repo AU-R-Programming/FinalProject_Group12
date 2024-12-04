@@ -1,6 +1,6 @@
 ---
-title: "Final_Group12"
-author: "Grant Preiss"
+title: "BinaryOptimization Package - Final_Group12"
+author: "Grant Preiss, Jacob Martin, Jack Wilson"
 date: "2024-12-03"
 output: html_document
 ---
@@ -8,9 +8,9 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+This R package implements a supervised binary classification framework designed to predict binary outcomes (e.g., 0 or 1) based on numerical predictor variables. Built around numerical optimization techniques, this package provides tools to build, analyze, and interpret logistic regression models.The package focuses on estimating model coefficients, evaluating model performance, and generating confidence intervals for better statistical understanding.
 ```{r}
-detach("package:BinaryOptimization", unload = TRUE)
+
 library(devtools)
 install_github("AU-R-Programming/FinalProject_Group12")
 library(BinaryOptimization)
