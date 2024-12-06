@@ -16,8 +16,8 @@ initial_values <- function(X, y) {
   y <- as.vector(y)
 
   # Check if the first column is not all ones (indicating no intercept column)
-  if (!all(X[, 1] == 1)) {
-    X <- cbind(1, X)  # Add intercept column
+  if (!all(X[, 1] == 1, na.rm = TRUE)) {
+    X <- cbind(1, X)  # Add intercept column to matrix
   }
 
   beta_0 <- solve(t(X) %*% X) %*% t(X) %*% y
