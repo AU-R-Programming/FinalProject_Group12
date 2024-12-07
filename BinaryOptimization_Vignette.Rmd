@@ -5,40 +5,110 @@ date: "2024-12-03"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 This R package implements a supervised binary classification framework designed to predict binary outcomes (e.g., 0 or 1) based on numerical predictor variables. Built around numerical optimization techniques, this package provides tools to build, analyze, and interpret logistic regression models.The package focuses on estimating model coefficients, evaluating model performance, and generating confidence intervals for better statistical understanding.
 
+# Section 1
 
 ## Installing & Loading Packages
-```{r}
+```{r, echo=TRUE, results="hide", message=FALSE, warning=FALSE}
 library(devtools)
 install_github("AU-R-Programming/FinalProject_Group12")
 library(BinaryOptimization)
 ```
 
-## Example Data 
-Once the package have been loaded, we can provide an example dataset to demonstrate this package's functions. First we will create a simple, small dataset with two predictors and a binary outcome variable.
+In this section, there are three steps required before the binary optimization tools can be used. ```devtools``` must be loaded to install this package. If you do not have devtools installed, run the following code in your local console, ```install.packages("devtools")```. Next, the package needs to be installed from our github, which has been made available as seen above. Finally, the ```BinaryOptimization``` package needs to be loaded.
 
-```{r}
+## Student Data 
 
-X <- matrix(c(1, 1, 1, 1, 2, 3, 4, 5), ncol = 2)
-y <- c(0, 1, 1, 0)
+The package is now downloaded and should be working at intended. To test whether the package is properly running and provide an example of how this package can be used. It is important to note this package performs tests centered around a regression model in which the outcome, or `y` is binary. The predictors, or `X` can be numerical, categorical, or a mix. 
+
+To demonstrate the process that can be achieved through this code, we will be using the ```student.csv``` data provided through this STAT 5210/6210 course. This data includes many possibly correlated variables, as it pertains to the success of a student. In this example, we will be using whether a student passes all of their current classes or not as our binary outcome. We will be using the highest level of education of the student's father, the study time each day of the student, and the number of past failures in classes by the student.
+
+```{r, echo=TRUE, results='markup', message=FALSE, warning=FALSE}
+#Load the Data
+student_data <- read.csv("student.csv")
+
+#Assign Predictors and Outcome 
+X <- student_data[, c("Fedu","studytime.x","failures.x")]
+y <- student_data$failures.y
+
+#Ensure correct data types are used
+X <- apply(X, 2, as.numeric)
+X <- cbind(1,X)
+y <- as.numeric(y)
+y <- ifelse(y >= 1, 1, 0)
+y <- 1-y
+head(y)
+head(X)
 ```
+
+#### Code Explanation
+Above, the code is intending to prepare the data so it can be properly interpreted and read by the process in this package. So first the data is loaded, then we must assign the columns we wish to be our predictors to ```X```. We then must choose the column, which can be made binary, we want to be our outcome, this will be called ```y```. Next we need to make sure the every entry in the ```X``` matrix is numeric, and then we must ensure the ```y``` vector is numeric, and convert the variable into a binary one, if it is not already. For my data, the student could either not fail a class, resulting in a 0 for this variable. Alternatively, the student could fail at least one course. Thus, any value greater than or equal to 1 would be set to equal 1. However, this meant the positive outcome, 1, correlated with a student failing a class. For this example I wanted to see if the predictors I chose were related to a student passing a class, therefore, I used a simple bit of code, ```y <- 1-y``` to instead have the positive outcome represent a student which passed all of their classes. 
+
+#### Results Discussion
+Here we see that the first row in our result is the vector labeled, ```y```. This is a vector, which we know it must be to continue through this package's intended process. The values headed are all 1, meaning the first 6 students passed all of their classes. However, while not headed, there are students with 0s, meaning they failed at least 1 class. Now the Matrix just below our ```y``` vector can be seen in this result. In the first column, the inputs are all ```1```. This was manually done so one can see the intended form of data to be used for this package, however, the package will determine whether this column has been added or not, and it will add a column of ```1``` automatically to force the data into the correct form. Now, the next three columns are our predictors. as stated above they are ```Fedu``` which is the highest education obtained by the father of the student. ```studytime.x``` which determines the amount of time each student studies per day in the semester. The final column is labeled ```failures.x``` which indicates how many classes each student has failed prior to their current semester. Now that the data has been properly prepared, the package can be implemented.
 
 ##  Estimating Coefficients For Logistic Regression 
 The core of this package is in estimating the coefficients β to represent the influence of the predictors on the binary outcome. It does this by minimizing the logistic loss function using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) optimization method. 
 
-```{r}
+```{r, echo=TRUE, results='markup', message=FALSE, warning=FALSE}
 # Estimate the coefficients for the logistic regression model
-beta_estimates <- estimate_coefficients(X, y)
+beta_initial <- initial_values(X, y)
+print(beta_initial)
+```
+
+#### Code Explanation
+This first function, ```initial_values``` provides the initial guesses for the beta coefficients using the least-squares formula. The code will ensure an intercept column does not need to be added to the ```X``` matrix and add one if needed. These guesses can best be defined as beta_0 which are good starting points for logical regression coefficients.
+
+#### Results Explanation
+From the ```initial_values``` function we received 4 distinct values.
+
+###### Intercept
+The first value is the beta_0 intercept and represents the log odds of passing for a student at a base level, or no education for father, no study time, and no failures in previous courses. This means, since our value was roughly 0.847, there is still a relatively high probability of passing all classes even if all predictor values are 0. 
+
+Next, the three other values are all coefficients which relate to each of our predictors. 
+
+###### Father's Highest Level of Education
+So, ```Fedu``` as around .018, indicating it slightly improves the log odds that they pass all of their classes the higher their father's education level is. 
+
+###### Time Spent Studying Each Day
+Next, ```studytime.x``` was roughly .0332. This means, like ```Fedu```, that the amount of time a student studies per day slightly improves the log odds that student passes all of their classes. 
+
+###### Failure of Previous Coureses
+Finally, ```failures.y``` received a value of around -0.1737. This means that previous failures decrease the log odds that a student passed all of their classes.
+
+```{r, echo=TRUE, results='markup', message=FALSE, warning=FALSE}
+beta_estimates <- estimate_coefficients(X,y)
 print(beta_estimates)
 ```
+ 
+#### Code Explanation
+This second function, ```estimate_coefficients``` optimizes the coefficients, beta, by performing logistic regression optimization. This means this functions is intended to minimize the logistic loss function and provide more optimized beta coefficients.
+
+#### Results Explanation
+From the ```estimate_coefficients``` function we received 4 distinct values.
+
+###### Intercept
+The first value is the beta intercept and represents the log odds of passing for a student at a base level, or no education for father, no study time, and no failures in previous courses. This means, since our value was roughly 1.2089, there is still a relatively high probability of passing all classes even if all predictor values are 0. 
+
+Next, the three other values are all coefficients which relate to each of our predictors. 
+
+###### Father's Highest Level of Education
+So, ```Fedu``` as around .24, indicating it still only slightly improves the log odds that they pass all of their classes the higher their father's education level is. 
+
+###### Time Spent Studying Each Day
+Next, ```studytime.x``` was roughly 0.686. This means, unlike ```Fedu```, that the amount of time a student studies per day has a more significant impact of the log odds of the student passing all courses and improves the log odds that student passes all of their classes. 
+
+###### Failure of Previous Coureses
+Finally, ```failures.y``` received a value of around -1.112. This means that previous failures have a significant impact and decrease the log odds that a student passed all of their classes.
 
 ## Evaluate The Model Using Logistic Loss
 Once we have the estimated coefficients, we can use the logistic_loss() function to evaluate the fit of the model by calculating the logistic loss. The logistic loss is a measure of how well the model's predictions match the actual data, with lower values indicating better performance.
-```{r}
+```{r, echo=TRUE, results='markup', message=FALSE, warning=FALSE}
 # Define the estimated coefficients
 beta <- beta_estimates
 
@@ -47,7 +117,103 @@ loss <- logistic_loss(beta, X, y)
 print(loss)
 ```
 
+#### Explaining the Code
+This code intends to determine how well the current optimized predictions fit the actual data. It does this by calculating the predicted probability for each observation, using the optimized betas and the expression, ```p <- 1 / (1 + exp(-X %*% beta))``` to determine each values probability of success using beta. Then, the result of this multiplication is then passed through the logistic (sigmoid) function, which squashes the result between 0 and 1 to give the probability of the positive outcome (1). Finally, based on whether the actual individual passed all of their classes or not, the predicted probability will contribute to the loss of the function.
+
+#### Discussing Results
+The logistic loss using our example was 84.259. Which, is relatively expected for how many total observations we have that will contribute to the loss function. However, the important thing to note is that this example was previously run with only two predictors, ```Fedu``` and ```studytime.x```. The loss here was around 160. This means the loss is significantly better when using the ```failures.y``` predictor as well. This value should go to 0 as more useful predictors are added to this model.
+
+# Section 2
+
+## Bootstrap Confidence Intervals
+This section intends to repeatedly sample the data set and then provide a confidence interval of coefficients based on this resampling. It is important to note that the confidence interval is selected to be alpha equals .05, please adjust for necessary level of confidence. This means, the results returned are upper and lower bounds, in which 95% of the bootstrapped coefficients fell within for our intercept and predictors.
+
+```{r, echo=TRUE, results='markup', message=FALSE, warning=FALSE}
+bootstrap <- bootstrap_ci(X, y, 0.05)
+print(bootstrap)
+```
+
+#### Discussing Code
+This function is set to bootstrap 20 times at a confidence interval of .95. The alpha and number of bootstraps can both be adjusted by changing the numbers at the end of the code. This will bootstrap our given data to resample the data 20 times. Then, it will find the optimized coefficients of each resampling and return a confidence interval which represents the boundaries in which 95% of those resampled coefficients fall within.
+
+#### Discussing Results
+Using the ```bootstrap_ci``` function in this package, returns a data frame of 4 columns and 2 rows. The rows are the upper and lower boundary of the confidence interval, and the columns are the intercept, and our three predictors.
+###### Intercept
+The first value is the beta intercept and represents the range in which 95% of the intercept coefficients fall within [-0.464, 2.707]. This means there is a significant amount of uncertainty whether the intercept influences whether a student passes all of their classes or not. This is because the intercept coefficient could be slightly negative, 0, or positive. It could also have an extreme positive influence on a student passing all of their classes.
+
+Next, the three other values are all confidence intervals for the coefficients which relate to each of our predictors. 
+
+###### Father's Highest Level of Education
+So, ```Fedu``` has a confidence interval of [-0.173, 0.796], indicating it is tough to determine whether the father's highest level of education could have a negative impact, could have almost no impact, or could have a positive impact on the outcome.
+
+###### Time Spent Studying Each Day
+Next, the confidence  interval of ```studytime.x``` was roughly [0.385, 1.287]. This means, unlike ```Fedu```, that it is likely the time spent studying each day day most likely improves the student's probability of passing all of their classes.
+
+###### Failure of Previous Coureses
+Finally, ```failures.y``` received a confidence interval of [-1.395, -0.863]. This means there is likely a large impact by previous failures of a student on failing now. This likely decreases one's odds of passing all of their classes.
+
+# Section 3
+
+## Confusion Matrix
+The confusion matrix will assess the accuracy of this logical regression model. In order to achieve this it will start by using a cutoff value of 0.5 to classify probabilities as either a 0 or a 1. 
+
+## Predictions
+```{r, echo=TRUE, results='markup', message=FALSE, warning=FALSE}
+y_pred <- predict_class(X, beta, cutoff = .5)
+```
+Here we can see the cutoff value is 0.5, meaning if the prediction value for a student is above 50%, then they will be a 1, and otherwise they will be a 0.
+
+## Confusion Matrix Result
+```{r, echo=TRUE, results='markup', message=FALSE, warning=FALSE}
+evaluation <- confusion_matrix(y, y_pred)
+print(evaluation$Metrics)
+```
+
+#### Discussing Code
+There are 6 different results that the confusion matrix calculates.
+
+###### Prevalence
+This result tells the probability of the actual data being a 1, or having a positive outcome.
+
+###### Accuracy
+This result tells the proportion of correct predictions made by the model. 
+
+###### Sensitivity
+Sensitivity measures the proportion of actual positives that are correctly identified by the model. In other words, it determines how likely the model is at determining actual positive values.
+
+###### Specificity
+Specificity identifies the proportion of actual negatives that are correctly identified by the model. In other words, it determines how likely the model is at determining actual negative values.
+
+###### False Discovery Rate
+False discovery rate identifies the proportion of actual negative values were falsely predicted to be negative values. In other words, how likely is the model to accidentally predict a "false positive".
+
+###### Diagnostic Odds Ratio
+The diagnostic odds ratio is an that combines sensitivity and specificity. It describes the ability of the model to accurately determine between positive and negative classes.
+
+#### Discussing Results
+
+###### Prevalence
+The model received a value of around 0.91099 here, meaning there is about a 91.1% chance for a positive outcome in our data. Which means it is incredibly likely that a student passes all of their classes regardless of their predictor scores.
+
+###### Accuracy
+This model had an accuracy of 0.916, or the model had a 91.6% chance to correctly predict the actual outcome. This would appear to suggest the model is working great, but this is not necessarily true, as the model could be predicting every single outcome as a positive value and be really close to this accuracy given the incredibly skewed set of outcomes we have in which most of the individuals will pass all of their classes.
+
+###### Sensitivity
+The model had a sensitivity score of .977, meaning it correctly predicted a positive outcome 97.7% of the time. This means the model is extremely capable at determining a student who would likely pass.
+
+###### Specificity
+The model had a result of 0.294, or 29.4% of actual positives were correctly determined. This means the model is not very good at correctly predicting negative values. It often predicts positive values when the actual outcome was a negative one.
+
+###### False Discovery Rate
+The result for this model was about .066, or about 6.6% of the predicted positive outcomes by the model were incorrect. This may seem like a low chance of being incorrect when predicting a positive value. However, it's important to note that the maximum this value could be was just under 9%. So the model is actually on the higher side of the maximum available false discovery rate. Meaning it often will give a false positive. However, it has a high likelihood of being correct when the model predicts a positive outcome overall.
+
+###### Diagnostic Odds Ratio
+The diagnostic odds ratio is 17.7 for this model. This means the model is about 17.1 times more likely to predict a correct outcome for the data than to predict a wrong one. This is a very good score, therefore, overall the model is good at predicting overall, even if it has a severe weakness at predicting a negative outcome.
+
 References: 
 https://chatgpt.com/share/674f5a8b-75e4-8011-bb0f-a7d310511afb
+
+
+Used for Markdown File: https://chatgpt.com/share/6753a828-1208-800b-b82d-32b7a55a2d13
 
 

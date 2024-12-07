@@ -365,24 +365,102 @@ techniques, this package provides tools to build, analyze, and interpret
 logistic regression models.The package focuses on estimating model
 coefficients, evaluating model performance, and generating confidence
 intervals for better statistical understanding.</p>
+<div id="section-1" class="section level1">
+<h1>Section 1</h1>
 <div id="installing-loading-packages" class="section level2">
 <h2>Installing &amp; Loading Packages</h2>
-<pre class="r"><code>library(devtools)</code></pre>
-<pre><code>## Loading required package: usethis</code></pre>
-<pre><code>## Warning: package &#39;usethis&#39; was built under R version 4.3.3</code></pre>
-<pre class="r"><code>install_github(&quot;AU-R-Programming/FinalProject_Group12&quot;)</code></pre>
-<pre><code>## Using GitHub PAT from the git credential store.</code></pre>
-<pre><code>## Skipping install of &#39;BinaryOptimization&#39; from a github remote, the SHA1 (70125ad9) has not changed since last install.
-##   Use `force = TRUE` to force installation</code></pre>
-<pre class="r"><code>library(BinaryOptimization)</code></pre>
+<pre class="r"><code>library(devtools)
+install_github(&quot;AU-R-Programming/FinalProject_Group12&quot;)
+library(BinaryOptimization)</code></pre>
+<p>In this section, there are three steps required before the binary
+optimization tools can be used. <code>devtools</code> must be loaded to
+install this package. If you do not have devtools installed, run the
+following code in your local console,
+<code>install.packages(&quot;devtools&quot;)</code>. Next, the package needs to be
+installed from our github, which has been made available as seen above.
+Finally, the <code>BinaryOptimization</code> package needs to be
+loaded.</p>
 </div>
-<div id="example-data" class="section level2">
-<h2>Example Data</h2>
-<p>Once the package have been loaded, we can provide an example dataset
-to demonstrate this package’s functions. First we will create a simple,
-small dataset with two predictors and a binary outcome variable.</p>
-<pre class="r"><code>X &lt;- matrix(c(1, 1, 1, 1, 2, 3, 4, 5), ncol = 2)
-y &lt;- c(0, 1, 1, 0)</code></pre>
+<div id="student-data" class="section level2">
+<h2>Student Data</h2>
+<p>The package is now downloaded and should be working at intended. To
+test whether the package is properly running and provide an example of
+how this package can be used. It is important to note this package
+performs tests centered around a regression model in which the outcome,
+or <code>y</code> is binary. The predictors, or <code>X</code> can be
+numerical, categorical, or a mix.</p>
+<p>To demonstrate the process that can be achieved through this code, we
+will be using the <code>student.csv</code> data provided through this
+STAT 5210/6210 course. This data includes many possibly correlated
+variables, as it pertains to the success of a student. In this example,
+we will be using whether a student passes all of their current classes
+or not as our binary outcome. We will be using the highest level of
+education of the student’s father, the study time each day of the
+student, and the number of past failures in classes by the student.</p>
+<pre class="r"><code>#Load the Data
+student_data &lt;- read.csv(&quot;student.csv&quot;)
+
+#Assign Predictors and Outcome 
+X &lt;- student_data[, c(&quot;Fedu&quot;,&quot;studytime.x&quot;,&quot;failures.x&quot;)]
+y &lt;- student_data$failures.y
+
+#Ensure correct data types are used
+X &lt;- apply(X, 2, as.numeric)
+X &lt;- cbind(1,X)
+y &lt;- as.numeric(y)
+y &lt;- ifelse(y &gt;= 1, 1, 0)
+y &lt;- 1-y
+head(y)</code></pre>
+<pre><code>## [1] 1 1 1 1 1 1</code></pre>
+<pre class="r"><code>head(X)</code></pre>
+<pre><code>##        Fedu studytime.x failures.x
+## [1,] 1    1           4          1
+## [2,] 1    1           2          2
+## [3,] 1    2           1          0
+## [4,] 1    4           3          0
+## [5,] 1    3           3          2
+## [6,] 1    4           3          0</code></pre>
+<div id="code-explanation" class="section level4">
+<h4>Code Explanation</h4>
+<p>Above, the code is intending to prepare the data so it can be
+properly interpreted and read by the process in this package. So first
+the data is loaded, then we must assign the columns we wish to be our
+predictors to <code>X</code>. We then must choose the column, which can
+be made binary, we want to be our outcome, this will be called
+<code>y</code>. Next we need to make sure the every entry in the
+<code>X</code> matrix is numeric, and then we must ensure the
+<code>y</code> vector is numeric, and convert the variable into a binary
+one, if it is not already. For my data, the student could either not
+fail a class, resulting in a 0 for this variable. Alternatively, the
+student could fail at least one course. Thus, any value greater than or
+equal to 1 would be set to equal 1. However, this meant the positive
+outcome, 1, correlated with a student failing a class. For this example
+I wanted to see if the predictors I chose were related to a student
+passing a class, therefore, I used a simple bit of code,
+<code>y &lt;- 1-y</code> to instead have the positive outcome represent
+a student which passed all of their classes.</p>
+</div>
+<div id="results-discussion" class="section level4">
+<h4>Results Discussion</h4>
+<p>Here we see that the first row in our result is the vector labeled,
+<code>y</code>. This is a vector, which we know it must be to continue
+through this package’s intended process. The values headed are all 1,
+meaning the first 6 students passed all of their classes. However, while
+not headed, there are students with 0s, meaning they failed at least 1
+class. Now the Matrix just below our <code>y</code> vector can be seen
+in this result. In the first column, the inputs are all <code>1</code>.
+This was manually done so one can see the intended form of data to be
+used for this package, however, the package will determine whether this
+column has been added or not, and it will add a column of <code>1</code>
+automatically to force the data into the correct form. Now, the next
+three columns are our predictors. as stated above they are
+<code>Fedu</code> which is the highest education obtained by the father
+of the student. <code>studytime.x</code> which determines the amount of
+time each student studies per day in the semester. The final column is
+labeled <code>failures.x</code> which indicates how many classes each
+student has failed prior to their current semester. Now that the data
+has been properly prepared, the package can be implemented.</p>
+</div>
 </div>
 <div id="estimating-coefficients-for-logistic-regression" class="section level2">
 <h2>Estimating Coefficients For Logistic Regression</h2>
@@ -391,9 +469,97 @@ represent the influence of the predictors on the binary outcome. It does
 this by minimizing the logistic loss function using the
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) optimization method.</p>
 <pre class="r"><code># Estimate the coefficients for the logistic regression model
-beta_estimates &lt;- estimate_coefficients(X, y)
+beta_initial &lt;- initial_values(X, y)
+print(beta_initial)</code></pre>
+<pre><code>## [1]  0.84745039  0.01809458  0.03323020 -0.17368111</code></pre>
+<div id="code-explanation-1" class="section level4">
+<h4>Code Explanation</h4>
+<p>This first function, <code>initial_values</code> provides the initial
+guesses for the beta coefficients using the least-squares formula. The
+code will ensure an intercept column does not need to be added to the
+<code>X</code> matrix and add one if needed. These guesses can best be
+defined as beta_0 which are good starting points for logical regression
+coefficients.</p>
+</div>
+<div id="results-explanation" class="section level4">
+<h4>Results Explanation</h4>
+<p>From the <code>initial_values</code> function we received 4 distinct
+values.</p>
+<div id="intercept" class="section level6">
+<h6>Intercept</h6>
+<p>The first value is the beta_0 intercept and represents the log odds
+of passing for a student at a base level, or no education for father, no
+study time, and no failures in previous courses. This means, since our
+value was roughly 0.847, there is still a relatively high probability of
+passing all classes even if all predictor values are 0.</p>
+<p>Next, the three other values are all coefficients which relate to
+each of our predictors.</p>
+</div>
+<div id="fathers-highest-level-of-education" class="section level6">
+<h6>Father’s Highest Level of Education</h6>
+<p>So, <code>Fedu</code> as around .018, indicating it slightly improves
+the log odds that they pass all of their classes the higher their
+father’s education level is.</p>
+</div>
+<div id="time-spent-studying-each-day" class="section level6">
+<h6>Time Spent Studying Each Day</h6>
+<p>Next, <code>studytime.x</code> was roughly .0332. This means, like
+<code>Fedu</code>, that the amount of time a student studies per day
+slightly improves the log odds that student passes all of their
+classes.</p>
+</div>
+<div id="failure-of-previous-coureses" class="section level6">
+<h6>Failure of Previous Coureses</h6>
+<p>Finally, <code>failures.y</code> received a value of around -0.1737.
+This means that previous failures decrease the log odds that a student
+passed all of their classes.</p>
+<pre class="r"><code>beta_estimates &lt;- estimate_coefficients(X,y)
 print(beta_estimates)</code></pre>
-<pre><code>## [1]  3.099257e-06 -1.216943e-06</code></pre>
+<pre><code>## [1]  1.2089382  0.2433902  0.6863035 -1.1127017</code></pre>
+</div>
+</div>
+<div id="code-explanation-2" class="section level4">
+<h4>Code Explanation</h4>
+<p>This second function, <code>estimate_coefficients</code> optimizes
+the coefficients, beta, by performing logistic regression optimization.
+This means this functions is intended to minimize the logistic loss
+function and provide more optimized beta coefficients.</p>
+</div>
+<div id="results-explanation-1" class="section level4">
+<h4>Results Explanation</h4>
+<p>From the <code>estimate_coefficients</code> function we received 4
+distinct values.</p>
+<div id="intercept-1" class="section level6">
+<h6>Intercept</h6>
+<p>The first value is the beta intercept and represents the log odds of
+passing for a student at a base level, or no education for father, no
+study time, and no failures in previous courses. This means, since our
+value was roughly 1.2089, there is still a relatively high probability
+of passing all classes even if all predictor values are 0.</p>
+<p>Next, the three other values are all coefficients which relate to
+each of our predictors.</p>
+</div>
+<div id="fathers-highest-level-of-education-1" class="section level6">
+<h6>Father’s Highest Level of Education</h6>
+<p>So, <code>Fedu</code> as around .24, indicating it still only
+slightly improves the log odds that they pass all of their classes the
+higher their father’s education level is.</p>
+</div>
+<div id="time-spent-studying-each-day-1" class="section level6">
+<h6>Time Spent Studying Each Day</h6>
+<p>Next, <code>studytime.x</code> was roughly 0.686. This means, unlike
+<code>Fedu</code>, that the amount of time a student studies per day has
+a more significant impact of the log odds of the student passing all
+courses and improves the log odds that student passes all of their
+classes.</p>
+</div>
+<div id="failure-of-previous-coureses-1" class="section level6">
+<h6>Failure of Previous Coureses</h6>
+<p>Finally, <code>failures.y</code> received a value of around -1.112.
+This means that previous failures have a significant impact and decrease
+the log odds that a student passed all of their classes.</p>
+</div>
+</div>
 </div>
 <div id="evaluate-the-model-using-logistic-loss" class="section level2">
 <h2>Evaluate The Model Using Logistic Loss</h2>
@@ -408,8 +574,230 @@ beta &lt;- beta_estimates
 # Compute the logistic loss for the current model
 loss &lt;- logistic_loss(beta, X, y)
 print(loss)</code></pre>
-<pre><code>## [1] 2.772589</code></pre>
+<pre><code>## [1] 84.25935</code></pre>
+<div id="explaining-the-code" class="section level4">
+<h4>Explaining the Code</h4>
+<p>This code intends to determine how well the current optimized
+predictions fit the actual data. It does this by calculating the
+predicted probability for each observation, using the optimized betas
+and the expression, <code>p &lt;- 1 / (1 + exp(-X %*% beta))</code> to
+determine each values probability of success using beta. Then, the
+result of this multiplication is then passed through the logistic
+(sigmoid) function, which squashes the result between 0 and 1 to give
+the probability of the positive outcome (1). Finally, based on whether
+the actual individual passed all of their classes or not, the predicted
+probability will contribute to the loss of the function.</p>
+</div>
+<div id="discussing-results" class="section level4">
+<h4>Discussing Results</h4>
+<p>The logistic loss using our example was 84.259. Which, is relatively
+expected for how many total observations we have that will contribute to
+the loss function. However, the important thing to note is that this
+example was previously run with only two predictors, <code>Fedu</code>
+and <code>studytime.x</code>. The loss here was around 160. This means
+the loss is significantly better when using the <code>failures.y</code>
+predictor as well. This value should go to 0 as more useful predictors
+are added to this model.</p>
+</div>
+</div>
+</div>
+<div id="section-2" class="section level1">
+<h1>Section 2</h1>
+<div id="bootstrap-confidence-intervals" class="section level2">
+<h2>Bootstrap Confidence Intervals</h2>
+<p>This section intends to repeatedly sample the data set and then
+provide a confidence interval of coefficients based on this resampling.
+It is important to note that the confidence interval is selected to be
+alpha equals .05, please adjust for necessary level of confidence. This
+means, the results returned are upper and lower bounds, in which 95% of
+the bootstrapped coefficients fell within for our intercept and
+predictors.</p>
+<pre class="r"><code>bootstrap &lt;- bootstrap_ci(X, y, 0.05)
+print(bootstrap)</code></pre>
+<pre><code>## $lower
+## [1] -0.83540870 -0.07463259  0.35366385 -1.65872649
+## 
+## $upper
+## [1]  2.7471367  0.7870435  1.6012050 -0.7971525</code></pre>
+<div id="discussing-code" class="section level4">
+<h4>Discussing Code</h4>
+<p>This function is set to bootstrap 20 times at a confidence interval
+of .95. The alpha and number of bootstraps can both be adjusted by
+changing the numbers at the end of the code. This will bootstrap our
+given data to resample the data 20 times. Then, it will find the
+optimized coefficients of each resampling and return a confidence
+interval which represents the boundaries in which 95% of those resampled
+coefficients fall within.</p>
+</div>
+<div id="discussing-results-1" class="section level4">
+<h4>Discussing Results</h4>
+<p>Using the <code>bootstrap_ci</code> function in this package, returns
+a data frame of 4 columns and 2 rows. The rows are the upper and lower
+boundary of the confidence interval, and the columns are the intercept,
+and our three predictors. ###### Intercept The first value is the beta
+intercept and represents the range in which 95% of the intercept
+coefficients fall within [-0.464, 2.707]. This means there is a
+significant amount of uncertainty whether the intercept influences
+whether a student passes all of their classes or not. This is because
+the intercept coefficient could be slightly negative, 0, or positive. It
+could also have an extreme positive influence on a student passing all
+of their classes.</p>
+<p>Next, the three other values are all confidence intervals for the
+coefficients which relate to each of our predictors.</p>
+<div id="fathers-highest-level-of-education-2" class="section level6">
+<h6>Father’s Highest Level of Education</h6>
+<p>So, <code>Fedu</code> has a confidence interval of [-0.173, 0.796],
+indicating it is tough to determine whether the father’s highest level
+of education could have a negative impact, could have almost no impact,
+or could have a positive impact on the outcome.</p>
+</div>
+<div id="time-spent-studying-each-day-2" class="section level6">
+<h6>Time Spent Studying Each Day</h6>
+<p>Next, the confidence interval of <code>studytime.x</code> was roughly
+[0.385, 1.287]. This means, unlike <code>Fedu</code>, that it is likely
+the time spent studying each day day most likely improves the student’s
+probability of passing all of their classes.</p>
+</div>
+<div id="failure-of-previous-coureses-2" class="section level6">
+<h6>Failure of Previous Coureses</h6>
+<p>Finally, <code>failures.y</code> received a confidence interval of
+[-1.395, -0.863]. This means there is likely a large impact by previous
+failures of a student on failing now. This likely decreases one’s odds
+of passing all of their classes.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="section-3" class="section level1">
+<h1>Section 3</h1>
+<div id="confusion-matrix" class="section level2">
+<h2>Confusion Matrix</h2>
+<p>The confusion matrix will assess the accuracy of this logical
+regression model. In order to achieve this it will start by using a
+cutoff value of 0.5 to classify probabilities as either a 0 or a 1.</p>
+</div>
+<div id="predictions" class="section level2">
+<h2>Predictions</h2>
+<pre class="r"><code>y_pred &lt;- predict_class(X, beta, cutoff = .5)</code></pre>
+<p>Here we can see the cutoff value is 0.5, meaning if the prediction
+value for a student is above 50%, then they will be a 1, and otherwise
+they will be a 0.</p>
+</div>
+<div id="confusion-matrix-result" class="section level2">
+<h2>Confusion Matrix Result</h2>
+<pre class="r"><code>evaluation &lt;- confusion_matrix(y, y_pred)
+print(evaluation$Metrics)</code></pre>
+<pre><code>## $Prevalence
+## [1] 0.9109948
+## 
+## $Accuracy
+## [1] 0.9162304
+## 
+## $Sensitivity
+## [1] 0.9770115
+## 
+## $Specificity
+## [1] 0.2941176
+## 
+## $FDR
+## [1] 0.06593407
+## 
+## $DOR
+## [1] 17.70833</code></pre>
+<div id="discussing-code-1" class="section level4">
+<h4>Discussing Code</h4>
+<p>There are 6 different results that the confusion matrix
+calculates.</p>
+<div id="prevalence" class="section level6">
+<h6>Prevalence</h6>
+<p>This result tells the probability of the actual data being a 1, or
+having a positive outcome.</p>
+</div>
+<div id="accuracy" class="section level6">
+<h6>Accuracy</h6>
+<p>This result tells the proportion of correct predictions made by the
+model.</p>
+</div>
+<div id="sensitivity" class="section level6">
+<h6>Sensitivity</h6>
+<p>Sensitivity measures the proportion of actual positives that are
+correctly identified by the model. In other words, it determines how
+likely the model is at determining actual positive values.</p>
+</div>
+<div id="specificity" class="section level6">
+<h6>Specificity</h6>
+<p>Specificity identifies the proportion of actual negatives that are
+correctly identified by the model. In other words, it determines how
+likely the model is at determining actual negative values.</p>
+</div>
+<div id="false-discovery-rate" class="section level6">
+<h6>False Discovery Rate</h6>
+<p>False discovery rate identifies the proportion of actual negative
+values were falsely predicted to be negative values. In other words, how
+likely is the model to accidentally predict a “false positive”.</p>
+</div>
+<div id="diagnostic-odds-ratio" class="section level6">
+<h6>Diagnostic Odds Ratio</h6>
+<p>The diagnostic odds ratio is an that combines sensitivity and
+specificity. It describes the ability of the model to accurately
+determine between positive and negative classes.</p>
+</div>
+</div>
+<div id="discussing-results-2" class="section level4">
+<h4>Discussing Results</h4>
+<div id="prevalence-1" class="section level6">
+<h6>Prevalence</h6>
+<p>The model received a value of around 0.91099 here, meaning there is
+about a 91.1% chance for a positive outcome in our data. Which means it
+is incredibly likely that a student passes all of their classes
+regardless of their predictor scores.</p>
+</div>
+<div id="accuracy-1" class="section level6">
+<h6>Accuracy</h6>
+<p>This model had an accuracy of 0.916, or the model had a 91.6% chance
+to correctly predict the actual outcome. This would appear to suggest
+the model is working great, but this is not necessarily true, as the
+model could be predicting every single outcome as a positive value and
+be really close to this accuracy given the incredibly skewed set of
+outcomes we have in which most of the individuals will pass all of their
+classes.</p>
+</div>
+<div id="sensitivity-1" class="section level6">
+<h6>Sensitivity</h6>
+<p>The model had a sensitivity score of .977, meaning it correctly
+predicted a positive outcome 97.7% of the time. This means the model is
+extremely capable at determining a student who would likely pass.</p>
+</div>
+<div id="specificity-1" class="section level6">
+<h6>Specificity</h6>
+<p>The model had a result of 0.294, or 29.4% of actual positives were
+correctly determined. This means the model is not very good at correctly
+predicting negative values. It often predicts positive values when the
+actual outcome was a negative one.</p>
+</div>
+<div id="false-discovery-rate-1" class="section level6">
+<h6>False Discovery Rate</h6>
+<p>The result for this model was about .066, or about 6.6% of the
+predicted positive outcomes by the model were incorrect. This may seem
+like a low chance of being incorrect when predicting a positive value.
+However, it’s important to note that the maximum this value could be was
+just under 9%. So the model is actually on the higher side of the
+maximum available false discovery rate. Meaning it often will give a
+false positive. However, it has a high likelihood of being correct when
+the model predicts a positive outcome overall.</p>
+</div>
+<div id="diagnostic-odds-ratio-1" class="section level6">
+<h6>Diagnostic Odds Ratio</h6>
+<p>The diagnostic odds ratio is 17.7 for this model. This means the
+model is about 17.1 times more likely to predict a correct outcome for
+the data than to predict a wrong one. This is a very good score,
+therefore, overall the model is good at predicting overall, even if it
+has a severe weakness at predicting a negative outcome.</p>
 <p>References: <a href="https://chatgpt.com/share/674f5a8b-75e4-8011-bb0f-a7d310511afb" class="uri">https://chatgpt.com/share/674f5a8b-75e4-8011-bb0f-a7d310511afb</a></p>
+<p>Used for Markdown File: <a href="https://chatgpt.com/share/6753a828-1208-800b-b82d-32b7a55a2d13" class="uri">https://chatgpt.com/share/6753a828-1208-800b-b82d-32b7a55a2d13</a></p>
+</div>
+</div>
+</div>
 </div>
 
 
